@@ -2,22 +2,20 @@
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import { Ad, Category } from '@/types/database';
-import { fetchActiveAds, fetchCategories } from '@/lib/adService';
+import { fetchActiveAds, fetchCategories, registerAdView, registerWhatsAppClick } from '@/lib/adService';
 import { AdCard } from '@/components/AdCard';
+import { AdModal } from '@/components/AdModal';
 import { buildAdSearchIndex, searchAndFilterAds, IndexedAd } from '@/lib/searchIndexer';
 import { 
   Search, 
   MapPin, 
   X, 
-  Sparkles, 
   Briefcase, 
   ArrowUpDown, 
   RefreshCw,
-  Flame,
   Clock,
   DollarSign,
-  Zap,
-  SlidersHorizontal
+  Zap
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -30,6 +28,7 @@ export default function PublicFeedPage() {
   const [quickFilter, setQuickFilter] = useState<'all' | 'today' | 'with_salary' | 'urgent'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'clicks' | 'views'>('recent');
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const loadData = async () => {
@@ -87,14 +86,36 @@ export default function PublicFeedPage() {
     setSearchQuery('');
   };
 
+  // Abrir detalle del aviso (permanente, no se cierra solo)
+  const handleOpenDetails = (ad: Ad) => {
+    setSelectedAd(ad);
+    // Registrar vista en segundo plano sin recargar ni desmontar componentes
+    registerAdView(ad.id).catch(err => console.error('Error logging view', err));
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedAd(null);
+  };
+
+  const handleWhatsAppFromModal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedAd) return;
+
+    const cleanPhone = selectedAd.contact_phone.replace(/\D/g, '');
+    const appName = process.env.NEXT_PUBLIC_APP_NAME || 'Chamba Al Toque Puno-Juliaca';
+    const defaultMessage = `Vi esta publicación por ${appName}, ¿está disponible la oferta laboral?`;
+    const whatsappUrl = `https://wa.me/51${cleanPhone}?text=${encodeURIComponent(defaultMessage)}`;
+
+    // Registrar clic en segundo plano
+    registerWhatsAppClick(selectedAd.id).catch(err => console.error('Error logging click', err));
+
+    // Abrir WhatsApp en nueva ventana/app
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 py-3 sm:py-6 space-y-3.5 sm:space-y-5">
-      {/* 
-        EL BANNER VERDE GIGANTE FUE RETIRADO SEGÚN LA SOLICITUD (IMAGEN 1).
-        En su lugar, tenemos un Header Mobile-First súper limpio y rápido.
-      */}
-
-      {/* Buscador Indexador Avanzado en Tiempo Real */}
+      {/* Buscador Indexador Avanzado en Tiempo Real (Mobile-First) */}
       <section className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/90 shadow-xs space-y-3 sticky top-16 z-30 backdrop-blur-md bg-white/95">
         {/* Input de Búsqueda Reactivo Principal */}
         <div className="relative flex items-center">
@@ -282,7 +303,7 @@ export default function PublicFeedPage() {
         </button>
       </div>
 
-      {/* Feed Principal de Anuncios (Tarjetas Optimizadas para Celular) */}
+      {/* Feed Principal de Anuncios */}
       <section>
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -339,13 +360,23 @@ export default function PublicFeedPage() {
               <AdCard 
                 key={ad.id} 
                 ad={ad} 
-                onUpdate={loadData}
+                onOpenDetails={handleOpenDetails}
                 searchQuery={searchQuery}
               />
             ))}
           </div>
         )}
       </section>
+
+      {/* Modal de Detalle Completo a Nivel de Página (Estable, no se cierra solo) */}
+      {selectedAd && (
+        <AdModal
+          isOpen={!!selectedAd}
+          onClose={handleCloseDetails}
+          ad={selectedAd}
+          onWhatsAppClick={handleWhatsAppFromModal}
+        />
+      )}
     </div>
   );
 }

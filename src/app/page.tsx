@@ -114,9 +114,9 @@ export default function PublicFeedPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-3 sm:py-6 space-y-3.5 sm:space-y-5">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-3 sm:py-6 space-y-3.5 sm:space-y-5 w-full">
       {/* Buscador Indexador Avanzado en Tiempo Real (Mobile-First) */}
-      <section className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/90 shadow-xs space-y-3 sticky top-16 z-30 backdrop-blur-md bg-white/95">
+      <section className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/90 shadow-xs space-y-3 w-full">
         {/* Input de Búsqueda Reactivo Principal */}
         <div className="relative flex items-center">
           <Search className="w-5 h-5 text-emerald-600 absolute left-3.5 pointer-events-none" />
@@ -124,8 +124,8 @@ export default function PublicFeedPage() {
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Buscar oficio o empleo (ej: ayudante de cocina, chofer, soldador, mozo)..."
-            className="w-full pl-11 pr-10 py-3 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-medium placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none transition shadow-inner"
+            placeholder="Buscar empleo (ej: ayudante de cocina, chofer, mozo)..."
+            className="w-full pl-11 pr-10 py-2.5 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-medium placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none transition shadow-inner"
           />
           {searchQuery && (
             <button
@@ -138,11 +138,11 @@ export default function PublicFeedPage() {
           )}
         </div>
 
-        {/* Selector de Ciudades Segmentado (Mobile-First: Puno vs Juliaca) */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl text-xs font-bold">
+        {/* Selector de Ciudades Segmentado (Mobile-First 3-column grid: Puno vs Juliaca) */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100/90 rounded-xl text-xs font-bold w-full">
           <button
             onClick={() => setSelectedCity('all')}
-            className={`flex-1 py-2 px-2.5 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 ${
+            className={`py-2 px-1 rounded-lg transition-all text-center flex items-center justify-center gap-1 ${
               selectedCity === 'all'
                 ? 'bg-white text-slate-900 shadow-xs font-extrabold'
                 : 'text-slate-600 hover:text-slate-900'
@@ -156,7 +156,7 @@ export default function PublicFeedPage() {
 
           <button
             onClick={() => setSelectedCity('Puno')}
-            className={`flex-1 py-2 px-2.5 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 ${
+            className={`py-2 px-1 rounded-lg transition-all text-center flex items-center justify-center gap-1 ${
               selectedCity === 'Puno'
                 ? 'bg-blue-600 text-white shadow-xs font-extrabold'
                 : 'text-slate-600 hover:text-blue-700'
@@ -172,7 +172,7 @@ export default function PublicFeedPage() {
 
           <button
             onClick={() => setSelectedCity('Juliaca')}
-            className={`flex-1 py-2 px-2.5 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 ${
+            className={`py-2 px-1 rounded-lg transition-all text-center flex items-center justify-center gap-1 ${
               selectedCity === 'Juliaca'
                 ? 'bg-purple-700 text-white shadow-xs font-extrabold'
                 : 'text-slate-600 hover:text-purple-700'
@@ -188,10 +188,10 @@ export default function PublicFeedPage() {
         </div>
 
         {/* Chips de Filtrado Rápido para Celular */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth w-full min-w-0 py-0.5 touch-pan-x">
           <button
             onClick={() => setQuickFilter(prev => prev === 'today' ? 'all' : 'today')}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 flex-shrink-0 ${
               quickFilter === 'today'
                 ? 'bg-amber-100 text-amber-900 border border-amber-300 font-bold'
                 : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
@@ -203,7 +203,7 @@ export default function PublicFeedPage() {
 
           <button
             onClick={() => setQuickFilter(prev => prev === 'urgent' ? 'all' : 'urgent')}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 flex-shrink-0 ${
               quickFilter === 'urgent'
                 ? 'bg-red-100 text-red-900 border border-red-300 font-bold'
                 : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
@@ -215,7 +215,7 @@ export default function PublicFeedPage() {
 
           <button
             onClick={() => setQuickFilter(prev => prev === 'with_salary' ? 'all' : 'with_salary')}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 flex-shrink-0 ${
               quickFilter === 'with_salary'
                 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold'
                 : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
@@ -230,7 +230,7 @@ export default function PublicFeedPage() {
           {/* Ordenar */}
           <button
             onClick={() => setSortBy(prev => prev === 'recent' ? 'clicks' : prev === 'clicks' ? 'views' : 'recent')}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center gap-1"
+            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center gap-1 flex-shrink-0"
             title="Cambiar orden"
           >
             <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
@@ -242,7 +242,7 @@ export default function PublicFeedPage() {
 
         {/* Rubros y Categorías con Barra Desplazable Horizontal en Móvil */}
         <div className="pt-1 border-t border-slate-100">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth w-full min-w-0 py-0.5 touch-pan-x">
             <button
               onClick={() => setSelectedCategory('all')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap flex-shrink-0 ${

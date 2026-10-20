@@ -1,6 +1,7 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 
 export const metadata: Metadata = {
   title: 'Chamba Al Toque | Avisos Clasificados de Empleo Puno y Juliaca',
@@ -13,19 +14,26 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#059669',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500 selection:text-white">
+    <html lang="es" className="overflow-x-hidden">
+      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden">
         <Navbar />
-        <main className="flex-1">
+        <main className="flex-1 pb-20 md:pb-8 w-full max-w-full overflow-x-hidden">
           {children}
         </main>
-        <footer className="bg-white border-t border-slate-200 py-8 px-4 text-center text-xs text-slate-500">
+        <footer className="bg-white border-t border-slate-200 py-8 px-4 text-center text-xs text-slate-500 hidden md:block">
           <div className="max-w-6xl mx-auto space-y-2">
             <p className="font-semibold text-slate-700">
               Chamba Al Toque • Digitalización de Clasificados de Empleo en Puno y Juliaca
@@ -34,10 +42,11 @@ export default function RootLayout({
               Conectando trabajadores de oficios, gastronomía, hotelería y construcción directamente por WhatsApp.
             </p>
             <p className="text-[11px] text-slate-400">
-              Tarifa para anunciantes: S/ 0.50 PEN por día vía Yape.
+              Tarifa económica para anunciantes vía Yape.
             </p>
           </div>
         </footer>
+        <MobileBottomNav />
       </body>
     </html>
   );

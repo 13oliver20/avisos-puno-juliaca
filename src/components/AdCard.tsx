@@ -22,18 +22,18 @@ export function AdCard({ ad, onOpenDetails }: AdCardProps) {
   return (
     <article
       onClick={() => onOpenDetails(ad)}
-      className="group relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-emerald-500 transition-all duration-200 cursor-pointer flex flex-col justify-between active:scale-[0.99] touch-manipulation"
+      className="group relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-emerald-500 transition-all duration-200 cursor-pointer flex flex-col justify-between active:scale-[0.99] touch-manipulation w-full min-w-0 max-w-full overflow-hidden"
     >
-      <div>
+      <div className="min-w-0 w-full">
         {/* Header de la tarjeta */}
-        <div className="flex items-center justify-between gap-2 mb-2.5">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60 truncate max-w-[65%]">
+        <div className="flex items-center justify-between gap-2 mb-2.5 min-w-0">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60 truncate min-w-0 flex-1">
             <Building2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
             <span className="truncate">{ad.category?.name || 'Aviso Clasificado'}</span>
           </span>
 
           {/* Badge de Tiempo Publicado */}
-          <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md ${
+          <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md flex-shrink-0 whitespace-nowrap ${
             isVeryRecent
               ? 'bg-amber-100 text-amber-900 border border-amber-300 font-extrabold animate-pulse'
               : 'text-slate-500 bg-slate-100'

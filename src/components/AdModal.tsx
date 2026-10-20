@@ -6,6 +6,8 @@ import { X, MessageCircle, MapPin, Calendar, Building2, Phone, CheckCircle2, Shi
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+import { formatPublicationTime } from '@/lib/formatTimeAgo';
+
 interface AdModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,9 +20,7 @@ interface AdModalProps {
 export function AdModal({ isOpen, onClose, ad, views, clicks, onWhatsAppClick }: AdModalProps) {
   if (!isOpen) return null;
 
-  const timeAgo = ad.created_at
-    ? formatDistanceToNow(parseISO(ad.created_at), { addSuffix: true, locale: es })
-    : 'recientemente';
+  const timeAgo = formatPublicationTime(ad.created_at);
 
   const cleanPhone = ad.contact_phone.replace(/\D/g, '');
 

@@ -2,16 +2,15 @@
 
 import React, { useState } from 'react';
 import { Ad } from '@/types/database';
-import { MapPin, Phone, MessageCircle, Calendar, Eye, Building2, ChevronRight, CheckCircle2 } from 'lucide-react';
-import { formatDistanceToNow, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { MapPin, Phone, MessageCircle, Clock, Eye, Building2, ChevronRight, Sparkles } from 'lucide-react';
 import { registerWhatsAppClick, registerAdView } from '@/lib/adService';
+import { formatPublicationTime } from '@/lib/formatTimeAgo';
 import { AdModal } from './AdModal';
-import { CountdownBadge } from './CountdownBadge';
 
 interface AdCardProps {
   ad: Ad;
   onUpdate?: () => void;
+  searchQuery?: string;
 }
 
 export function AdCard({ ad, onUpdate }: AdCardProps) {
@@ -25,7 +24,7 @@ export function AdCard({ ad, onUpdate }: AdCardProps) {
   const whatsappUrl = `https://wa.me/51${cleanPhone}?text=${encodeURIComponent(defaultMessage)}`;
 
   const handleWhatsAppClick = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Evitar abrir el modal si se clica el botón
+    e.stopPropagation();
     setClicks(prev => prev + 1);
     try {
       await registerWhatsAppClick(ad.id);
@@ -33,7 +32,6 @@ export function AdCard({ ad, onUpdate }: AdCardProps) {
     } catch (err) {
       console.error('Error logging click', err);
     }
-    // Abrir WhatsApp en nueva pestaña
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -48,36 +46,57 @@ export function AdCard({ ad, onUpdate }: AdCardProps) {
     }
   };
 
-  const timeAgo = ad.created_at
-    ? formatDistanceToNow(parseISO(ad.created_at), { addSuffix: true, locale: es })
-    : 'recientemente';
+  // Formato estricto requerido:
+  // - 0 a 59 mins: SOLO minutos (ej: "Hace 15 mins")
+  // - 1 a 23 horas: SOLO horas (ej: "Hace 3 horas")
+  // - >= 24 horas: Días (ej: "Hace 2 días")
+  const timeFormatted = formatPublicationTime(ad.created_at);
+  const isVeryRecent = timeFormatted.includes('min');
 
   return (
     <>
       <article
         onClick={handleCardClick}
-        className="group relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+        className="group relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:shadow-md hover:border-emerald-500 transition-all duration-200 cursor-pointer flex flex-col justify-between active:scale-[0.99] touch-manipulation"
       >
         <div>
           {/* Header de la tarjeta */}
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-              <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-              {ad.category?.name || 'Aviso Clasificado'}
+          <div className="flex items-center justify-between gap-2 mb-2.5">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60 truncate max-w-[65%]">
+              <Building2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+              <span className="truncate">{ad.category?.name || 'Aviso Clasificado'}</span>
             </span>
 
-            <div className="flex items-center gap-1.5">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold ${
-                ad.city === 'Puno' 
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                  : ad.city === 'Juliaca' 
-                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                  : 'bg-slate-100 text-slate-700'
-              }`}>
-                <MapPin className="w-3 h-3 mr-1" />
-                {ad.city}
+            {/* Badge de Tiempo Publicado */}
+            <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md ${
+              isVeryRecent
+                ? 'bg-amber-100 text-amber-900 border border-amber-300 font-extrabold animate-pulse'
+                : 'text-slate-500 bg-slate-100'
+            }`}>
+              {isVeryRecent && <Sparkles className="w-3 h-3 text-amber-600" />}
+              <Clock className="w-3 h-3 text-slate-400" />
+              <span>{timeFormatted}</span>
+            </span>
+          </div>
+
+          {/* Ciudad y Dirección */}
+          <div className="flex items-center gap-2 mb-2 text-xs">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded font-bold ${
+              ad.city === 'Puno' 
+                ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                : ad.city === 'Juliaca' 
+                ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                : 'bg-slate-100 text-slate-700'
+            }`}>
+              <MapPin className="w-3 h-3 mr-1" />
+              {ad.city}
+            </span>
+
+            {ad.address && (
+              <span className="text-slate-400 truncate max-w-[200px]" title={ad.address}>
+                {ad.address}
               </span>
-            </div>
+            )}
           </div>
 
           {/* Título */}
@@ -86,41 +105,32 @@ export function AdCard({ ad, onUpdate }: AdCardProps) {
           </h3>
 
           {/* Descripción resumida */}
-          <p className="text-sm text-slate-600 line-clamp-3 mb-4 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 sm:line-clamp-3 mb-3 leading-relaxed">
             {ad.description}
           </p>
 
-          {/* Metadatos: Sueldo / Ubicación */}
-          <div className="space-y-1.5 mb-4 text-xs sm:text-sm text-slate-500">
-            {ad.salary_info && (
-              <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
-                <span className="bg-emerald-100 px-2 py-0.5 rounded">
-                  💰 {ad.salary_info}
-                </span>
-              </div>
-            )}
-            {ad.address && (
-              <div className="flex items-center gap-1 text-slate-500 truncate">
-                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
-                <span className="truncate">{ad.address}</span>
-              </div>
-            )}
-          </div>
+          {/* Sueldo Destacado */}
+          {ad.salary_info && (
+            <div className="mb-3">
+              <span className="inline-block bg-emerald-50 text-emerald-800 font-bold text-xs px-2.5 py-1 rounded-lg border border-emerald-200">
+                💰 {ad.salary_info}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Footer de la tarjeta con Botón WhatsApp muy visible */}
+        {/* Footer de la tarjeta con Botón WhatsApp muy visible (Mobile-First) */}
         <div className="pt-3 border-t border-slate-100 mt-2">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-3">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              {timeAgo}
+          <div className="flex items-center justify-between text-xs text-slate-400 mb-2.5">
+            <span className="text-slate-400 text-[11px]">
+              Toca para ver detalle
             </span>
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 text-slate-500 font-medium" title="Visualizaciones">
+              <span className="flex items-center gap-1 text-slate-500 font-medium text-[11px]" title="Visualizaciones">
                 <Eye className="w-3.5 h-3.5 text-slate-400" />
                 {views}
               </span>
-              <span className="flex items-center gap-1 text-emerald-600 font-medium" title="Contactos por WhatsApp">
+              <span className="flex items-center gap-1 text-emerald-600 font-semibold text-[11px]" title="Contactos por WhatsApp">
                 <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
                 {clicks}
               </span>
@@ -128,11 +138,11 @@ export function AdCard({ ad, onUpdate }: AdCardProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Call to Action WhatsApp destacado */}
+            {/* Call to Action WhatsApp destacado en móvil */}
             <button
               type="button"
               onClick={handleWhatsAppClick}
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-150 text-sm"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-150 text-sm touch-manipulation"
               title="Abrir chat en WhatsApp"
             >
               <MessageCircle className="w-4 h-4 fill-current" />
@@ -142,7 +152,7 @@ export function AdCard({ ad, onUpdate }: AdCardProps) {
             <button
               type="button"
               onClick={handleCardClick}
-              className="p-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors"
+              className="p-3 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors"
               title="Ver detalle completo"
             >
               <ChevronRight className="w-5 h-5" />

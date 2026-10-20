@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCloudAds, getCloudCategories, updateCloudAds } from '@/lib/cloudDb';
+import { getCloudAds, getCloudCategories, updateCloudAds, getCloudConfig } from '@/lib/cloudDb';
 import { Ad } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -52,10 +52,15 @@ export async function POST(request: Request) {
     const categories = await getCloudCategories();
     const category = categories.find(c => c.id === categoryId) || categories[0];
 
-    const pricePerDay = 0.50;
+    const config = await getCloudConfig();
+    const pricePerDay = typeof config.pricePerDay === 'number' ? config.pricePerDay : 0.50;
     const totalAmount = Number((daysContracted * pricePerDay).toFixed(2));
     const now = new Date();
     const newAdId = `ad-${Date.now()}`;
+    const isAutoApprove = Boolean(config.autoApprove);
+    const endDate = isAutoApprove 
+      ? new Date(now.getTime() + daysContracted * 24 * 60 * 60 * 1000).toISOString() 
+      : undefined;
 
     const newAd: Ad = {
       id: newAdId,
@@ -67,7 +72,9 @@ export async function POST(request: Request) {
       contact_phone: contactPhone,
       address,
       salary_info: salaryInfo,
-      status: 'pendiente_pago',
+      status: isAutoApprove ? 'activo' : 'pendiente_pago',
+      start_date: isAutoApprove ? now.toISOString() : undefined,
+      end_date: endDate,
       created_at: now.toISOString(),
       updated_at: now.toISOString(),
       metrics: {
@@ -83,7 +90,7 @@ export async function POST(request: Request) {
         yape_validation_code: yapeValidationCode,
         amount_paid: totalAmount,
         days_contracted: daysContracted,
-        status: 'pendiente',
+        status: isAutoApprove ? 'aprobado' : 'pendiente',
         created_at: now.toISOString(),
         updated_at: now.toISOString()
       }

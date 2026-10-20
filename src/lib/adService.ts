@@ -118,3 +118,55 @@ export async function approvePaymentAndAd(paymentId: string, adId: string, daysC
     return false;
   }
 }
+
+export interface PlatformConfig {
+  pricePerDay: number;
+  yapePhone: string;
+  yapeHolder: string;
+  autoApprove: boolean;
+  minDays: number;
+  maxDays: number;
+}
+
+export const DEFAULT_PLATFORM_CONFIG: PlatformConfig = {
+  pricePerDay: 0.50,
+  yapePhone: '951 847 210',
+  yapeHolder: 'Avisos Clasificados Puno',
+  autoApprove: false,
+  minDays: 1,
+  maxDays: 30
+};
+
+export async function fetchPlatformConfig(): Promise<PlatformConfig> {
+  try {
+    const res = await fetch('/api/config', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data.pricePerDay === 'number') {
+        return { ...DEFAULT_PLATFORM_CONFIG, ...data };
+      }
+    }
+  } catch (err) {
+    console.warn('Falling back to default platform config', err);
+  }
+  return DEFAULT_PLATFORM_CONFIG;
+}
+
+export async function updatePlatformConfig(newConfig: Partial<PlatformConfig>): Promise<boolean> {
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newConfig)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return !!data.success;
+    }
+    return false;
+  } catch (err) {
+    console.error('Error updating platform config', err);
+    return false;
+  }
+}
+

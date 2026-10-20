@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Category, CityOption } from '@/types/database';
-import { fetchCategories, createAdWithPayment } from '@/lib/adService';
+import { fetchCategories, createAdWithPayment, fetchPlatformConfig, PlatformConfig, DEFAULT_PLATFORM_CONFIG } from '@/lib/adService';
 import { addDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
@@ -26,6 +26,7 @@ export function CreateAdWizard() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [config, setConfig] = useState<PlatformConfig>(DEFAULT_PLATFORM_CONFIG);
 
   // Form State
   const [step, setStep] = useState<1 | 2>(1); // 1: Datos del aviso y duración, 2: Pago Yape
@@ -37,9 +38,9 @@ export function CreateAdWizard() {
   const [address, setAddress] = useState('');
   const [salaryInfo, setSalaryInfo] = useState('');
 
-  // Duration & Pricing (0.50 PEN / day)
+  // Duration & Pricing (dynamic from platform config)
   const [days, setDays] = useState<number>(7);
-  const pricePerDay = Number(process.env.NEXT_PUBLIC_PRICE_PER_DAY) || 0.50;
+  const pricePerDay = typeof config.pricePerDay === 'number' ? config.pricePerDay : 0.50;
   const totalCost = (days * pricePerDay).toFixed(2);
 
   // Yape State
@@ -49,19 +50,25 @@ export function CreateAdWizard() {
   const [createdAdId, setCreatedAdId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const yapeNumber = process.env.NEXT_PUBLIC_YAPE_PHONE || '951 847 210';
-  const yapeHolder = process.env.NEXT_PUBLIC_YAPE_HOLDER || 'Avisos Clasificados Puno & Juliaca';
+  const yapeNumber = config.yapePhone || '951 847 210';
+  const yapeHolder = config.yapeHolder || 'Avisos Clasificados Puno & Juliaca';
 
   useEffect(() => {
     async function load() {
       try {
-        const cats = await fetchCategories();
+        const [cats, platConfig] = await Promise.all([
+          fetchCategories(),
+          fetchPlatformConfig()
+        ]);
         setCategories(cats);
         if (cats.length > 0) {
           setCategoryId(cats[0].id);
         }
+        if (platConfig) {
+          setConfig(platConfig);
+        }
       } catch (err) {
-        console.error('Error loading categories', err);
+        console.error('Error loading initial wizard data', err);
       } finally {
         setIsLoadingCategories(false);
       }
@@ -191,7 +198,7 @@ export function CreateAdWizard() {
             Paso {step} de 2
           </span>
           <span className="text-xs text-emerald-100">
-            Tarifa: S/ 0.50 PEN x día
+            Tarifa: S/ {pricePerDay.toFixed(2)} PEN x día
           </span>
         </div>
         <h1 className="text-2xl font-black">
@@ -337,7 +344,7 @@ export function CreateAdWizard() {
             />
           </div>
 
-          {/* CONFIGURACIÓN DE TIEMPO E INVERSIÓN (0.50 PEN x día) */}
+          {/* CONFIGURACIÓN DE TIEMPO E INVERSIÓN */}
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 p-5 rounded-2xl border border-emerald-200">
             <div className="flex items-center justify-between mb-3">
               <label className="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
@@ -345,7 +352,7 @@ export function CreateAdWizard() {
                 4. Configuración de Tiempo e Inversión
               </label>
               <span className="text-xs font-bold bg-emerald-200/80 text-emerald-800 px-2 py-0.5 rounded-full">
-                S/ 0.50 x día
+                S/ {pricePerDay.toFixed(2)} x día
               </span>
             </div>
 
@@ -362,8 +369,8 @@ export function CreateAdWizard() {
 
               <input
                 type="range"
-                min={1}
-                max={30}
+                min={config.minDays || 1}
+                max={config.maxDays || 30}
                 step={1}
                 value={days}
                 onChange={e => setDays(Number(e.target.value))}
@@ -371,10 +378,10 @@ export function CreateAdWizard() {
               />
 
               <div className="flex justify-between text-[11px] text-slate-400 font-medium">
-                <span>1 día (S/ 0.50)</span>
-                <span>7 días (S/ 3.50)</span>
-                <span>15 días (S/ 7.50)</span>
-                <span>30 días (S/ 15.00)</span>
+                <span>1 día (S/ {(pricePerDay * 1).toFixed(2)})</span>
+                <span>7 días (S/ {(pricePerDay * 7).toFixed(2)})</span>
+                <span>15 días (S/ {(pricePerDay * 15).toFixed(2)})</span>
+                <span>30 días (S/ {(pricePerDay * 30).toFixed(2)})</span>
               </div>
             </div>
 

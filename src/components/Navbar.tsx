@@ -82,8 +82,8 @@ export function Navbar() {
             >
               <PlusCircle className="w-4 h-4" />
               <span>Coloca tu anuncio</span>
-              <span className="hidden lg:inline bg-white/20 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
-                S/ 0.50/día
+              <span className="hidden lg:inline bg-white/20 text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                Al instante
               </span>
             </Link>
           </div>

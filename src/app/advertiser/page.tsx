@@ -54,7 +54,7 @@ export default function AdvertiserDashboardPage() {
             Dashboard del Anunciante
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Gestiona tus clasificados de empleo en Puno y Juliaca con tarifa plana de S/ 0.50 PEN por día.
+            Gestiona tus clasificados de empleo en Puno y Juliaca con tarifa diaria accesible y activación inmediata.
           </p>
         </div>
 

@@ -3,14 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, PlusCircle, Building2, ShieldCheck } from 'lucide-react';
+import { Search, PlusCircle, LogIn, User, ShieldCheck } from 'lucide-react';
+import { useAuth } from '@/lib/authContext';
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const isHome = pathname === '/' || pathname.startsWith('/public');
-  const isAdvertiser = pathname === '/advertiser';
   const isCreateAd = pathname === '/advertiser/nuevo';
+  const isUserPanel = pathname === '/panel';
+  const isLoginRoute = pathname === '/login' || pathname === '/register';
   const isAdmin = pathname.startsWith('/admin');
 
   return (
@@ -46,18 +49,36 @@ export function MobileBottomNav() {
           </span>
         </Link>
 
-        {/* Portal Anunciantes */}
-        <Link
-          href="/advertiser"
-          className={`flex flex-col items-center justify-center h-full transition ${
-            isAdvertiser
-              ? 'text-emerald-600 font-extrabold'
-              : 'text-slate-500 hover:text-slate-900 font-medium'
-          }`}
-        >
-          <Building2 className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Empleadores</span>
-        </Link>
+        {/* Iniciar Sesión / Nombre de Usuario si está logeado */}
+        {user ? (
+          <Link
+            href="/panel"
+            className={`flex flex-col items-center justify-center h-full transition ${
+              isUserPanel
+                ? 'text-emerald-600 font-extrabold'
+                : 'text-slate-500 hover:text-slate-900 font-medium'
+            }`}
+          >
+            <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black mb-0.5">
+              {(user.firstName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+            </div>
+            <span className="text-[10px] tracking-tight truncate max-w-[64px]">
+              {user.firstName || 'Mi Panel'}
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className={`flex flex-col items-center justify-center h-full transition ${
+              isLoginRoute
+                ? 'text-emerald-600 font-extrabold'
+                : 'text-slate-500 hover:text-slate-900 font-medium'
+            }`}
+          >
+            <LogIn className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Iniciar Sesión</span>
+          </Link>
+        )}
 
         {/* Panel Admin */}
         <Link

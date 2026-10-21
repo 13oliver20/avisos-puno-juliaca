@@ -3,14 +3,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Briefcase, PlusCircle, ShieldAlert } from 'lucide-react';
+import { Briefcase, PlusCircle, ShieldAlert, LogIn, User } from 'lucide-react';
+import { useAuth } from '@/lib/authContext';
 
 export function Navbar() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const isPublic = pathname === '/' || pathname.startsWith('/public');
-  const isAdvertiser = pathname.startsWith('/advertiser') && !pathname.startsWith('/advertiser/nuevo');
   const isAdmin = pathname.startsWith('/admin');
+  const isAuthRoute = pathname === '/login' || pathname === '/register' || pathname === '/panel';
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
@@ -36,7 +38,7 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Navegación Desktop (Oculta en Celular para evitar descuadre) */}
+          {/* Navegación Desktop */}
           <div className="hidden md:flex items-center gap-2">
             <nav className="flex items-center gap-1.5">
               <Link
@@ -50,16 +52,37 @@ export function Navbar() {
                 Buscar Empleos
               </Link>
 
-              <Link
-                href="/advertiser"
-                className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition ${
-                  isAdvertiser
-                    ? 'bg-emerald-50 text-emerald-800'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                Anunciantes
-              </Link>
+              {/* Botón Iniciar Sesión / Nombre de Usuario si está logeado */}
+              {user ? (
+                <Link
+                  href="/panel"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition max-w-[190px] ${
+                    pathname === '/panel'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                      : 'bg-emerald-50 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100'
+                  }`}
+                  title={`Conectado como ${user.fullName || user.email}`}
+                >
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                    pathname === '/panel' ? 'bg-white text-emerald-700' : 'bg-emerald-600 text-white'
+                  }`}>
+                    {(user.firstName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                  </div>
+                  <span className="truncate">{user.firstName || user.email.split('@')[0]}</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition ${
+                    isAuthRoute
+                      ? 'bg-emerald-50 text-emerald-800 font-bold'
+                      : 'text-slate-600 hover:text-emerald-700 hover:bg-emerald-50'
+                  }`}
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Iniciar Sesión</span>
+                </Link>
+              )}
 
               <Link
                 href="/admin"
@@ -76,7 +99,7 @@ export function Navbar() {
             </nav>
           </div>
 
-          {/* Botón CTA: "Publicar" en móvil, "Coloca tu anuncio" en desktop */}
+          {/* Botón CTA: "Publicar" en móvil, "Publicar anuncio" en desktop */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link
               href="/advertiser/nuevo"

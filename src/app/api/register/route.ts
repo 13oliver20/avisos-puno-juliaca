@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { sendRegistrationEmail } from '@/lib/emailService';
+import { saveCloudUser } from '@/lib/cloudDb';
+import { extractOnlyFirstName } from '@/lib/adTime';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,15 +79,31 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Obtener URL base de la aplicación para el enlace de inicio de sesión
+    // 3. Persistir en el Directorio de Usuarios de la Plataforma
+    const strictlyFirstName = extractOnlyFirstName(cleanFirstName, cleanEmail);
+    try {
+      await saveCloudUser({
+        id: userId,
+        email: cleanEmail,
+        firstName: strictlyFirstName,
+        lastName: cleanLastName,
+        fullName: fullName,
+        role: 'anunciante',
+        created_at: new Date().toISOString()
+      });
+    } catch (saveErr) {
+      console.warn('Could not save user to cloudDb:', saveErr);
+    }
+
+    // 4. Obtener URL base de la aplicación para el enlace de inicio de sesión
     const requestUrl = new URL(request.url);
     const origin = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin;
     const loginUrl = `${origin}/login`;
 
-    // 4. Enviar Correo #1 vía Resend
+    // 5. Enviar Correo #1 vía Resend
     const emailResult = await sendRegistrationEmail({
       to: cleanEmail,
-      firstName: cleanFirstName,
+      firstName: strictlyFirstName,
       lastName: cleanLastName,
       email: cleanEmail,
       loginUrl: loginUrl
@@ -98,7 +116,7 @@ export async function POST(request: Request) {
       user: {
         id: userId,
         email: cleanEmail,
-        firstName: cleanFirstName,
+        firstName: strictlyFirstName,
         lastName: cleanLastName,
         fullName: fullName
       }

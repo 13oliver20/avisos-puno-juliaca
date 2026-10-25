@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, PlusCircle, LogIn, User, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
+import { extractOnlyFirstName } from '@/lib/adTime';
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -15,6 +16,8 @@ export function MobileBottomNav() {
   const isUserPanel = pathname === '/panel';
   const isLoginRoute = pathname === '/login' || pathname === '/register';
   const isAdmin = pathname.startsWith('/admin');
+
+  const userFirstName = user ? extractOnlyFirstName(user.firstName, user.email) : '';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] md:hidden safe-area-bottom">
@@ -60,10 +63,10 @@ export function MobileBottomNav() {
             }`}
           >
             <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black mb-0.5">
-              {(user.firstName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+              {userFirstName.charAt(0).toUpperCase()}
             </div>
             <span className="text-[10px] tracking-tight truncate max-w-[64px]">
-              {user.firstName || 'Mi Panel'}
+              {userFirstName}
             </span>
           </Link>
         ) : (

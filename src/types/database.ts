@@ -26,6 +26,8 @@ export interface Category {
 export interface Ad {
   id: string;
   advertiser_id?: string | null;
+  advertiser_name?: string | null;
+  user_email?: string | null;
   category_id: string;
   title: string;
   description: string;
@@ -63,3 +65,25 @@ export interface Payment {
   created_at: string;
   updated_at: string;
 }
+
+export interface RegisteredUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  role: UserRole;
+  phone?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface UserWithAdHistory extends RegisteredUser {
+  ads: Ad[];
+  activeAdsCount: number;
+  expiredAdsCount: number;
+  pendingAdsCount: number;
+  totalViews: number;
+  totalClicks: number;
+}
+

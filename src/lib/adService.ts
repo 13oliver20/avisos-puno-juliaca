@@ -1,4 +1,4 @@
-import { Ad, Category } from '@/types/database';
+import { Ad, Category, UserWithAdHistory } from '@/types/database';
 import { INITIAL_ADS, INITIAL_CATEGORIES } from './mockData';
 
 export async function fetchCategories(): Promise<Category[]> {
@@ -60,6 +60,41 @@ export async function fetchAllAdsAdmin(): Promise<Ad[]> {
   return INITIAL_ADS;
 }
 
+export async function fetchUserAds(userEmail: string, userId: string): Promise<Ad[]> {
+  try {
+    const params = new URLSearchParams();
+    if (userEmail) params.set('email', userEmail);
+    if (userId) params.set('userId', userId);
+
+    const res = await fetch(`/api/user/ads?${params.toString()}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch (err) {
+    console.error('Error fetching user ads', err);
+  }
+  // Fallback local
+  const cleanEmail = (userEmail || '').trim().toLowerCase();
+  return INITIAL_ADS.filter(a => 
+    (a.advertiser_id && a.advertiser_id === userId) ||
+    (a.user_email && a.user_email.toLowerCase() === cleanEmail)
+  );
+}
+
+export async function fetchUsersWithAdHistory(): Promise<UserWithAdHistory[]> {
+  try {
+    const res = await fetch('/api/admin/users', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch (err) {
+    console.error('Error fetching users with ad history', err);
+  }
+  return [];
+}
+
 export async function registerWhatsAppClick(adId: string): Promise<void> {
   try {
     await fetch(`/api/ads/${adId}/click`, { method: 'POST' });
@@ -86,6 +121,9 @@ export async function createAdWithPayment(params: {
   salaryInfo?: string;
   daysContracted: number;
   yapeValidationCode: string;
+  advertiserId?: string;
+  advertiserName?: string;
+  userEmail?: string;
 }): Promise<{ success: boolean; adId: string }> {
   try {
     const res = await fetch('/api/ads', {
@@ -169,4 +207,25 @@ export async function updatePlatformConfig(newConfig: Partial<PlatformConfig>): 
     return false;
   }
 }
+
+export async function deleteUserAdmin(userId: string, email: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const params = new URLSearchParams();
+    if (userId) params.set('id', userId);
+    if (email) params.set('email', email);
+
+    const res = await fetch(`/api/admin/users?${params.toString()}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      return { success: true };
+    }
+    return { success: false, error: data.error || 'Error al eliminar usuario' };
+  } catch (err: any) {
+    console.error('Error in deleteUserAdmin:', err);
+    return { success: false, error: err.message || 'Error de conexión al eliminar usuario' };
+  }
+}
+
 

@@ -34,9 +34,11 @@ import {
   Smartphone,
   Sliders,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Users
 } from 'lucide-react';
 import { differenceInDays, differenceInHours, parseISO } from 'date-fns';
+import { UserManagementDirectory } from '@/components/UserManagementDirectory';
 
 export default function AdminDashboardPage() {
   // Authentication State
@@ -47,8 +49,8 @@ export default function AdminDashboardPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Tab State: 'ads' | 'config'
-  const [activeTab, setActiveTab] = useState<'ads' | 'config'>('ads');
+  // Tab State: 'ads' | 'config' | 'users'
+  const [activeTab, setActiveTab] = useState<'ads' | 'config' | 'users'>('ads');
 
   // Ads & Metrics State
   const [ads, setAds] = useState<Ad[]>([]);
@@ -350,10 +352,10 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Tabs Selector */}
-      <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl max-w-md">
+      <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl max-w-xl flex-wrap sm:flex-nowrap">
         <button
           onClick={() => setActiveTab('ads')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap ${
             activeTab === 'ads'
               ? 'bg-white text-slate-900 shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
@@ -369,15 +371,27 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('users')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap ${
+            activeTab === 'users'
+              ? 'bg-white text-slate-900 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Users className="w-4 h-4 text-purple-600" />
+          <span>Gestión de Usuarios</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('config')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap ${
             activeTab === 'config'
               ? 'bg-white text-slate-900 shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Settings className="w-4 h-4 text-purple-600" />
-          <span>Configuración Plataforma</span>
+          <Settings className="w-4 h-4 text-slate-600" />
+          <span>Configuración</span>
         </button>
       </div>
 
@@ -916,6 +930,11 @@ export default function AdminDashboardPage() {
             </button>
           </div>
         </form>
+      )}
+
+      {/* --- TAB 3: GESTIÓN Y DIRECTORIO DE USUARIOS --- */}
+      {activeTab === 'users' && (
+        <UserManagementDirectory />
       )}
     </div>
   );

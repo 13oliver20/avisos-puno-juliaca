@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { extractOnlyFirstName } from '@/lib/adTime';
 
 export interface AuthUser {
   id: string;
@@ -41,7 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             const meta = session.user.user_metadata || {};
-            const firstName = meta.first_name || session.user.email?.split('@')[0] || 'Usuario';
+            const rawFirstName = meta.first_name || meta.full_name || session.user.email?.split('@')[0] || 'Usuario';
+            const firstName = extractOnlyFirstName(rawFirstName, session.user.email);
             const lastName = meta.last_name || '';
             const fullName = meta.full_name || `${firstName} ${lastName}`.trim();
 
@@ -85,7 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const meta = session.user.user_metadata || {};
-          const firstName = meta.first_name || session.user.email?.split('@')[0] || 'Usuario';
+          const rawFirstName = meta.first_name || meta.full_name || session.user.email?.split('@')[0] || 'Usuario';
+          const firstName = extractOnlyFirstName(rawFirstName, session.user.email);
           const lastName = meta.last_name || '';
           const fullName = meta.full_name || `${firstName} ${lastName}`.trim();
 
@@ -128,7 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (data.user) {
           const meta = data.user.user_metadata || {};
-          const firstName = meta.first_name || cleanEmail.split('@')[0];
+          const rawFirstName = meta.first_name || meta.full_name || cleanEmail.split('@')[0];
+          const firstName = extractOnlyFirstName(rawFirstName, cleanEmail);
           const lastName = meta.last_name || '';
           const fullName = meta.full_name || `${firstName} ${lastName}`.trim();
 
@@ -147,12 +151,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Si Supabase no está activo o como fallback demostrativo para desarrollo
+      const firstName = extractOnlyFirstName(cleanEmail.split('@')[0], cleanEmail);
       const fallbackUser: AuthUser = {
         id: `usr-${Date.now()}`,
         email: cleanEmail,
-        firstName: cleanEmail.split('@')[0],
+        firstName,
         lastName: '',
-        fullName: cleanEmail.split('@')[0]
+        fullName: firstName
       };
       setUser(fallbackUser);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallbackUser));
@@ -180,8 +185,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setUserFromData = (userData: AuthUser) => {
-    setUser(userData);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userData));
+    const cleanUser: AuthUser = {
+      ...userData,
+      firstName: extractOnlyFirstName(userData.firstName, userData.email)
+    };
+    setUser(cleanUser);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cleanUser));
   };
 
   return (

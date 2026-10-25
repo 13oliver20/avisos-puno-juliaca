@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getCloudAds, getCloudCategories, updateCloudAds, getCloudConfig } from '@/lib/cloudDb';
+import { getCloudAds, getCloudCategories, updateCloudAds, getCloudConfig, saveCloudUser } from '@/lib/cloudDb';
 import { Ad } from '@/types/database';
+import { extractOnlyFirstName } from '@/lib/adTime';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,10 @@ export async function POST(request: Request) {
       address,
       salaryInfo,
       daysContracted,
-      yapeValidationCode
+      yapeValidationCode,
+      advertiserId,
+      advertiserName,
+      userEmail
     } = body;
 
     const categories = await getCloudCategories();
@@ -64,6 +68,9 @@ export async function POST(request: Request) {
 
     const newAd: Ad = {
       id: newAdId,
+      advertiser_id: advertiserId || null,
+      advertiser_name: advertiserName || null,
+      user_email: userEmail ? userEmail.trim().toLowerCase() : null,
       category_id: categoryId,
       category,
       title,
@@ -99,6 +106,30 @@ export async function POST(request: Request) {
     const currentAds = await getCloudAds();
     const updatedAds = [newAd, ...currentAds];
     await updateCloudAds(updatedAds);
+
+    // Registrar al anunciante como usuario en el panel si tiene email o advertiser_id
+    if (userEmail || advertiserId) {
+      try {
+        const cleanEmail = userEmail
+          ? userEmail.trim().toLowerCase()
+          : `${advertiserId}@anunciante.chambaaltoque.pe`;
+        const rawName = advertiserName || (contactPhone ? `Anunciante ${contactPhone}` : 'Anunciante');
+        const firstName = extractOnlyFirstName(rawName, cleanEmail);
+        const lastName = rawName.replace(firstName, '').trim();
+        await saveCloudUser({
+          id: advertiserId || `usr-${Date.now()}`,
+          email: cleanEmail,
+          firstName,
+          lastName,
+          fullName: rawName,
+          role: 'anunciante',
+          phone: contactPhone || undefined,
+          created_at: now.toISOString()
+        });
+      } catch (saveErr) {
+        console.warn('Could not auto-register advertiser as user:', saveErr);
+      }
+    }
 
     return NextResponse.json({ success: true, ad: newAd });
   } catch (err: any) {

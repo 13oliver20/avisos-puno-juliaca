@@ -21,9 +21,11 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/authContext';
 
 export function CreateAdWizard() {
   const router = useRouter();
+  const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [config, setConfig] = useState<PlatformConfig>(DEFAULT_PLATFORM_CONFIG);
@@ -130,6 +132,9 @@ export function CreateAdWizard() {
         salaryInfo,
         daysContracted: days,
         yapeValidationCode: cleanYapeCode,
+        advertiserId: user?.id,
+        advertiserName: user ? (user.fullName || `${user.firstName} ${user.lastName}`.trim()) : undefined,
+        userEmail: user?.email,
       });
 
       setCreatedAdId(res.adId);

@@ -1,4 +1,4 @@
-import { Ad, Category } from '@/types/database';
+import { Ad, Category, RegisteredUser } from '@/types/database';
 
 export const INITIAL_CATEGORIES: Category[] = [
   { id: 'cat-1', name: 'Restaurantes y Gastronomía', slug: 'restaurantes-gastronomia', icon: 'Utensils', created_at: new Date().toISOString() },
@@ -24,6 +24,8 @@ export const INITIAL_ADS: Ad[] = [
   {
     id: 'ad-1',
     advertiser_id: 'usr-1',
+    advertiser_name: 'Oliver Quispe Ramos',
+    user_email: '13oliver20@gmail.com',
     category_id: 'cat-1',
     title: 'Se necesita Ayudante de Cocina urgente con o sin experiencia',
     description: 'Restaurante turístico ubicado frente a la Plaza de Armas de Puno requiere urgente ayudante de cocina para turno mañana y tarde. Se ofrece almuerzo, propinas y buen clima laboral. Interesados escribir al WhatsApp o presentarse con CV.',
@@ -43,6 +45,8 @@ export const INITIAL_ADS: Ad[] = [
   {
     id: 'ad-2',
     advertiser_id: 'usr-2',
+    advertiser_name: 'María Condori Flores',
+    user_email: 'maria.condori@gmail.com',
     category_id: 'cat-3',
     title: 'Maestro Albañil y 2 Peones para vaciado de techo en Juliaca',
     description: 'Se solicita maestro de obra y 2 peones ayudantes para vaciado de techo y asentado de ladrillo en Salida a Puno, Juliaca. Pago semanal puntual todos los sábados. Inicio inmediato.',
@@ -62,6 +66,8 @@ export const INITIAL_ADS: Ad[] = [
   {
     id: 'ad-3',
     advertiser_id: 'usr-3',
+    advertiser_name: 'Juan Carlos Mamani Apaza',
+    user_email: 'juan.mamani@hotmail.com',
     category_id: 'cat-4',
     title: 'Repartidor con moto propia para pollería delivery en Juliaca',
     description: 'Pollería en Jr. San Martín solicita repartidor delivery con moto propia y documentos en regla (SOAT y Brevete). Horario: 5:30 pm a 11:30 pm. Sueldo base + combustible + propinas diarias.',
@@ -81,6 +87,8 @@ export const INITIAL_ADS: Ad[] = [
   {
     id: 'ad-4',
     advertiser_id: 'usr-4',
+    advertiser_name: 'Rosa Huanca Pari',
+    user_email: 'rosa.huanca@gmail.com',
     category_id: 'cat-1',
     title: 'Hornero y Parrillero con experiencia para pollería en Puno',
     description: 'Urgente maestro hornero con experiencia comprobada en brasa y carbón. Turno completo. Incluye almuerzo y cena. Se valora rapidez y pulcritud.',
@@ -100,6 +108,8 @@ export const INITIAL_ADS: Ad[] = [
   {
     id: 'ad-5',
     advertiser_id: 'usr-5',
+    advertiser_name: 'Pedro Apaza Coila',
+    user_email: 'pedro.apaza@yahoo.com',
     category_id: 'cat-7',
     title: 'Chofer con Brevete A-IIa para Combi Ruta Puno - Juliaca',
     description: 'Empresa de transportes interprovincial necesita conductor responsable y sin papeletas graves para servicio regular Puno - Juliaca. Trato directo con dueño de unidad.',
@@ -121,6 +131,8 @@ export const INITIAL_ADS: Ad[] = [
   {
     id: 'ad-6',
     advertiser_id: 'usr-6',
+    advertiser_name: 'Carmen Flores Quispe',
+    user_email: 'carmen.flores@outlook.com',
     category_id: 'cat-2',
     title: 'Recepcionista Bilingüe Turno Noche para Hotel en Puno',
     description: 'Hotel céntrico en Puno busca recepcionista nocturno (8:00 pm a 7:00 am). Manejo básico/intermedio de inglés y computación. Disponibilidad inmediata.',
@@ -499,5 +511,174 @@ export const INITIAL_ADS: Ad[] = [
     category: INITIAL_CATEGORIES[0],
     metrics: { id: 'met-25', ad_id: 'ad-25', views_count: 156, whatsapp_clicks: 44, updated_at: now.toISOString() },
     payment: { id: 'pay-25', ad_id: 'ad-25', yape_validation_code: 'YP-991144', amount_paid: 5.00, days_contracted: 10, status: 'aprobado', created_at: day(6), updated_at: day(6) }
+  },
+  // --- ANUNCIOS EXPIRADOS (HISTORIAL COMPLETO) ---
+  {
+    id: 'ad-exp-1',
+    advertiser_id: 'usr-1',
+    advertiser_name: 'Oliver Quispe Ramos',
+    user_email: '13oliver20@gmail.com',
+    category_id: 'cat-1',
+    title: 'Mesera de atención al cliente turno tarde en Puno Centro',
+    description: 'Buscamos señorita mesera proactiva para atención en cafetería tradicional. Turno tarde de 2pm a 9pm. Pago puntual.',
+    city: 'Puno',
+    contact_phone: '951234567',
+    status: 'expirado',
+    start_date: day(9),
+    end_date: day(2), // Expiró hace 2 días
+    salary_info: 'S/ 950 mensual + propinas',
+    address: 'Jr. Lima 380, Puno',
+    created_at: day(9),
+    updated_at: day(2),
+    category: INITIAL_CATEGORIES[0],
+    metrics: { id: 'met-exp-1', ad_id: 'ad-exp-1', views_count: 210, whatsapp_clicks: 58, updated_at: day(2) },
+    payment: { id: 'pay-exp-1', ad_id: 'ad-exp-1', yape_validation_code: 'YP-771122', amount_paid: 3.50, days_contracted: 7, status: 'aprobado', created_at: day(9), updated_at: day(9) }
+  },
+  {
+    id: 'ad-exp-2',
+    advertiser_id: 'usr-1',
+    advertiser_name: 'Oliver Quispe Ramos',
+    user_email: '13oliver20@gmail.com',
+    category_id: 'cat-4',
+    title: 'Repartidor motorizado para pollería delivery en Puno',
+    description: 'Se solicita delivery con moto propia para fines de semana. Se cubre gasolina y refrigerio.',
+    city: 'Puno',
+    contact_phone: '951234567',
+    status: 'expirado',
+    start_date: day(4),
+    end_date: hour(5), // Expiró hace 5 horas
+    salary_info: 'S/ 50 diario + propinas',
+    address: 'Av. Floral 450, Puno',
+    created_at: day(4),
+    updated_at: hour(5),
+    category: INITIAL_CATEGORIES[3],
+    metrics: { id: 'met-exp-2', ad_id: 'ad-exp-2', views_count: 145, whatsapp_clicks: 36, updated_at: hour(5) },
+    payment: { id: 'pay-exp-2', ad_id: 'ad-exp-2', yape_validation_code: 'YP-992233', amount_paid: 2.00, days_contracted: 4, status: 'aprobado', created_at: day(4), updated_at: day(4) }
+  },
+  {
+    id: 'ad-exp-3',
+    advertiser_id: 'usr-2',
+    advertiser_name: 'María Condori Flores',
+    user_email: 'maria.condori@gmail.com',
+    category_id: 'cat-3',
+    title: 'Ayudantes de carga y estibadores para almacén en Salida Puno',
+    description: 'Se requiere 2 personas con fuerza física para descarga de bolsas de cemento y fierro.',
+    city: 'Juliaca',
+    contact_phone: '951987654',
+    status: 'expirado',
+    start_date: day(10),
+    end_date: day(3), // Expiró hace 3 días
+    salary_info: 'S/ 70 por jornada',
+    address: 'Salida Puno Km 4, Juliaca',
+    created_at: day(10),
+    updated_at: day(3),
+    category: INITIAL_CATEGORIES[2],
+    metrics: { id: 'met-exp-3', ad_id: 'ad-exp-3', views_count: 180, whatsapp_clicks: 41, updated_at: day(3) },
+    payment: { id: 'pay-exp-3', ad_id: 'ad-exp-3', yape_validation_code: 'YP-338822', amount_paid: 3.50, days_contracted: 7, status: 'aprobado', created_at: day(10), updated_at: day(10) }
+  },
+  {
+    id: 'ad-exp-4',
+    advertiser_id: 'usr-3',
+    advertiser_name: 'Juan Carlos Mamani Apaza',
+    user_email: 'juan.mamani@hotmail.com',
+    category_id: 'cat-7',
+    title: 'Conductor categoría A-IIb para furgón de reparto Juliaca-Puno',
+    description: 'Empresa distribuidora de abarrotes busca chofer con récord de conductor limpio.',
+    city: 'Ambas',
+    contact_phone: '950445566',
+    status: 'expirado',
+    start_date: day(6),
+    end_date: hour(18), // Expiró hace 18 horas
+    salary_info: 'S/ 1,800 mensual + viáticos',
+    address: 'Jr. Huancané 120, Juliaca',
+    created_at: day(6),
+    updated_at: hour(18),
+    category: INITIAL_CATEGORIES[6],
+    metrics: { id: 'met-exp-4', ad_id: 'ad-exp-4', views_count: 230, whatsapp_clicks: 65, updated_at: hour(18) },
+    payment: { id: 'pay-exp-4', ad_id: 'ad-exp-4', yape_validation_code: 'YP-551100', amount_paid: 3.00, days_contracted: 6, status: 'aprobado', created_at: day(6), updated_at: day(6) }
   }
 ];
+
+export const INITIAL_USERS: RegisteredUser[] = [
+  {
+    id: 'usr-1',
+    email: '13oliver20@gmail.com',
+    firstName: 'Oliver',
+    lastName: 'Quispe Ramos',
+    fullName: 'Oliver Quispe Ramos',
+    role: 'anunciante',
+    phone: '951234567',
+    created_at: day(7)
+  },
+  {
+    id: 'usr-2',
+    email: 'maria.condori@gmail.com',
+    firstName: 'María',
+    lastName: 'Condori Flores',
+    fullName: 'María Condori Flores',
+    role: 'anunciante',
+    phone: '951987654',
+    created_at: day(6)
+  },
+  {
+    id: 'usr-3',
+    email: 'juan.mamani@hotmail.com',
+    firstName: 'Juan',
+    lastName: 'Mamani Apaza',
+    fullName: 'Juan Mamani Apaza',
+    role: 'anunciante',
+    phone: '950445566',
+    created_at: day(5)
+  },
+  {
+    id: 'usr-4',
+    email: 'rosa.huanca@gmail.com',
+    firstName: 'Rosa',
+    lastName: 'Huanca Pari',
+    fullName: 'Rosa Huanca Pari',
+    role: 'anunciante',
+    phone: '951334455',
+    created_at: day(4)
+  },
+  {
+    id: 'usr-5',
+    email: 'pedro.apaza@yahoo.com',
+    firstName: 'Pedro',
+    lastName: 'Apaza Coila',
+    fullName: 'Pedro Apaza Coila',
+    role: 'anunciante',
+    phone: '958112233',
+    created_at: day(4)
+  },
+  {
+    id: 'usr-6',
+    email: 'carmen.flores@outlook.com',
+    firstName: 'Carmen',
+    lastName: 'Flores Quispe',
+    fullName: 'Carmen Flores Quispe',
+    role: 'anunciante',
+    phone: '951778899',
+    created_at: day(3)
+  },
+  {
+    id: 'usr-nuevo',
+    email: 'renato.postulante@gmail.com',
+    firstName: 'Renato',
+    lastName: 'Calisaya',
+    fullName: 'Renato Calisaya',
+    role: 'anunciante',
+    phone: '950998877',
+    created_at: day(1)
+  },
+  {
+    id: 'usr-admin',
+    email: 'admin@chambaaltoque.pe',
+    firstName: 'Admin',
+    lastName: 'Sistema',
+    fullName: 'Admin Sistema',
+    role: 'admin',
+    phone: '951847210',
+    created_at: day(30)
+  }
+];
+

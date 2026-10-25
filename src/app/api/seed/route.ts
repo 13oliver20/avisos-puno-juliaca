@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { INITIAL_ADS, INITIAL_CATEGORIES } from '@/lib/mockData';
+import { INITIAL_ADS, INITIAL_CATEGORIES, INITIAL_USERS } from '@/lib/mockData';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +14,8 @@ export async function GET() {
   try {
     const items = [
       { operation: 'upsert', key: 'categories', value: INITIAL_CATEGORIES },
-      { operation: 'upsert', key: 'ads', value: INITIAL_ADS }
+      { operation: 'upsert', key: 'ads', value: INITIAL_ADS },
+      { operation: 'upsert', key: 'users', value: INITIAL_USERS }
     ];
 
     const res = await fetch(`https://api.vercel.com/v1/edge-config/${edgeConfigId}/items`, {
@@ -27,7 +28,7 @@ export async function GET() {
     });
 
     const data = await res.json();
-    return NextResponse.json({ success: true, count: INITIAL_ADS.length, result: data });
+    return NextResponse.json({ success: true, adsCount: INITIAL_ADS.length, usersCount: INITIAL_USERS.length, result: data });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

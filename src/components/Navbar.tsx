@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Briefcase, PlusCircle, ShieldAlert, LogIn, User } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
+import { extractOnlyFirstName } from '@/lib/adTime';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -13,6 +14,8 @@ export function Navbar() {
   const isPublic = pathname === '/' || pathname.startsWith('/public');
   const isAdmin = pathname.startsWith('/admin');
   const isAuthRoute = pathname === '/login' || pathname === '/register' || pathname === '/panel';
+
+  const userFirstName = user ? extractOnlyFirstName(user.firstName, user.email) : '';
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
@@ -61,14 +64,14 @@ export function Navbar() {
                       ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                       : 'bg-emerald-50 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100'
                   }`}
-                  title={`Conectado como ${user.fullName || user.email}`}
+                  title={`Conectado como ${userFirstName}`}
                 >
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
                     pathname === '/panel' ? 'bg-white text-emerald-700' : 'bg-emerald-600 text-white'
                   }`}>
-                    {(user.firstName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                    {userFirstName.charAt(0).toUpperCase()}
                   </div>
-                  <span className="truncate">{user.firstName || user.email.split('@')[0]}</span>
+                  <span className="truncate">{userFirstName}</span>
                 </Link>
               ) : (
                 <Link

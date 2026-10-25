@@ -1,5 +1,5 @@
-import { Ad, Category } from '@/types/database';
-import { INITIAL_ADS, INITIAL_CATEGORIES } from './mockData';
+import { Ad, Category, RegisteredUser } from '@/types/database';
+import { INITIAL_ADS, INITIAL_CATEGORIES, INITIAL_USERS } from './mockData';
 
 const EDGE_CONFIG_URL = process.env.EDGE_CONFIG || '';
 const EDGE_CONFIG_ID = process.env.EDGE_CONFIG_ID || '';
@@ -41,7 +41,9 @@ export async function getCloudCategories(): Promise<Category[]> {
 }
 
 export async function getCloudAds(): Promise<Ad[]> {
-  if (!EDGE_CONFIG_URL) return INITIAL_ADS;
+  // Si Edge Config está configurado, SIEMPRE usar Edge Config como fuente de verdad.
+  // No caer al mockData aunque el array esté vacío.
+  if (!EDGE_CONFIG_URL) return [];
   try {
     const [baseUrl, query] = EDGE_CONFIG_URL.split('?');
     const res = await fetch(`${baseUrl}/item/ads?${query}`, {
@@ -54,7 +56,7 @@ export async function getCloudAds(): Promise<Ad[]> {
   } catch (err) {
     console.error('Error fetching ads from Edge Config:', err);
   }
-  return INITIAL_ADS;
+  return [];
 }
 
 export async function updateCloudAds(updatedAds: Ad[]): Promise<boolean> {
@@ -130,3 +132,98 @@ export async function updateCloudConfig(newConfig: Partial<AppConfig>): Promise<
     return false;
   }
 }
+
+export async function getCloudUsers(): Promise<RegisteredUser[]> {
+  // Si Edge Config está configurado, SIEMPRE usar Edge Config como fuente de verdad.
+  // No caer al mockData aunque el array esté vacío (panel limpio es válido).
+  if (!EDGE_CONFIG_URL) return [];
+  try {
+    const [baseUrl, query] = EDGE_CONFIG_URL.split('?');
+    const res = await fetch(`${baseUrl}/item/users?${query}`, {
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      const data = await res.json();
+      // Retornar el array directamente (puede ser [] si no hay usuarios aún)
+      if (Array.isArray(data)) return data;
+    }
+  } catch (err) {
+    console.error('Error fetching users from Edge Config:', err);
+  }
+  return [];
+}
+
+export async function updateCloudUsers(updatedUsers: RegisteredUser[]): Promise<boolean> {
+  if (!EDGE_CONFIG_ID || !VERCEL_API_TOKEN) return false;
+  try {
+    const res = await fetch(`https://api.vercel.com/v1/edge-config/${EDGE_CONFIG_ID}/items`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${VERCEL_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        items: [
+          {
+            operation: 'upsert',
+            key: 'users',
+            value: updatedUsers
+          }
+        ]
+      })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Error writing users to Edge Config:', err);
+    return false;
+  }
+}
+
+export async function saveCloudUser(user: RegisteredUser): Promise<boolean> {
+  try {
+    const current = await getCloudUsers();
+    const index = current.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase() || u.id === user.id);
+    let updated: RegisteredUser[];
+    if (index >= 0) {
+      updated = [...current];
+      updated[index] = { ...updated[index], ...user };
+    } else {
+      updated = [user, ...current];
+    }
+    return await updateCloudUsers(updated);
+  } catch (err) {
+    console.error('Error saving user to Edge Config:', err);
+    return false;
+  }
+}
+
+export async function deleteCloudUser(userIdOrEmail: string, deleteUserAds = true): Promise<boolean> {
+  try {
+    const key = userIdOrEmail.trim().toLowerCase();
+
+    // 1. Eliminar de la lista de usuarios en Edge Config
+    const currentUsers = await getCloudUsers();
+    const updatedUsers = currentUsers.filter(u => 
+      u.id.toLowerCase() !== key && u.email.toLowerCase() !== key
+    );
+    await updateCloudUsers(updatedUsers);
+
+    // 2. Si deleteUserAds es true, eliminar también sus anuncios asociados
+    if (deleteUserAds) {
+      const currentAds = await getCloudAds();
+      const updatedAds = currentAds.filter(ad => {
+        const matchId = ad.advertiser_id && ad.advertiser_id.toLowerCase() === key;
+        const matchEmail = ad.user_email && ad.user_email.toLowerCase() === key;
+        return !matchId && !matchEmail;
+      });
+      await updateCloudAds(updatedAds);
+    }
+
+    return true;
+  } catch (err) {
+    console.error('Error deleting user from Edge Config:', err);
+    return false;
+  }
+}
+
+

@@ -456,28 +456,38 @@ export function CreateAdWizard() {
             </div>
 
             {/* Código QR y Datos */}
-            <div className="bg-white rounded-xl p-4 text-slate-900 flex flex-col sm:flex-row items-center gap-4">
-              {/* Código QR Ilustrativo */}
-              <div className="w-32 h-32 bg-slate-100 rounded-xl border border-slate-200 flex flex-col items-center justify-center p-2 relative flex-shrink-0">
-                <QrCode className="w-24 h-24 text-[#742284]" />
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">QR Yape Oficial</span>
+            <div className="bg-white rounded-xl p-4 text-slate-900 flex flex-col sm:flex-row items-center gap-5">
+              {/* Código QR Real o Fallback Ilustrativo */}
+              <div className="w-40 h-40 bg-white rounded-2xl border-2 border-purple-100 flex flex-col items-center justify-center p-2 relative flex-shrink-0 shadow-xs overflow-hidden">
+                {config.yapeQrUrl ? (
+                  <img 
+                    src={config.yapeQrUrl} 
+                    alt="Código QR Yape Oficial" 
+                    className="w-full h-full object-contain rounded-xl"
+                  />
+                ) : (
+                  <>
+                    <QrCode className="w-24 h-24 text-[#742284]" />
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight mt-1">QR Yape Oficial</span>
+                  </>
+                )}
               </div>
 
               <div className="flex-1 text-center sm:text-left space-y-2">
                 <div>
                   <span className="text-xs text-slate-500 font-medium">Número para Yapear:</span>
-                  <p className="text-xl font-extrabold font-mono text-[#742284]">
+                  <p className="text-2xl font-black font-mono text-[#742284] tracking-tight">
                     {yapeNumber}
                   </p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 font-medium">Titular / Empresa:</span>
-                  <p className="text-xs font-bold text-slate-700">
+                  <span className="text-xs text-slate-500 font-medium">Titular / Destinatario:</span>
+                  <p className="text-sm font-bold text-slate-800">
                     {yapeHolder}
                   </p>
                 </div>
-                <div className="text-[11px] text-slate-400">
-                  Concepto: Aviso de {days} días ({title.slice(0, 24)}...)
+                <div className="text-[11px] text-slate-500 bg-purple-50/70 p-2 rounded-lg border border-purple-100">
+                  <span className="font-semibold text-purple-900">Concepto:</span> Aviso {days} días - {title.slice(0, 24)}...
                 </div>
               </div>
             </div>

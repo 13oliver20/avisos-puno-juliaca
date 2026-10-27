@@ -37,7 +37,10 @@ import {
   Sliders,
   CheckCircle2,
   Sparkles,
-  Users
+  Users,
+  QrCode,
+  UploadCloud,
+  Trash2
 } from 'lucide-react';
 import { differenceInDays, differenceInHours, parseISO } from 'date-fns';
 import { UserManagementDirectory } from '@/components/UserManagementDirectory';
@@ -202,6 +205,61 @@ export default function AdminDashboardPage() {
     const current = Number(config.pricePerDay) || 0.50;
     const updated = Math.max(0.10, Math.round((current + delta) * 100) / 100);
     setConfig(prev => ({ ...prev, pricePerDay: updated }));
+  };
+
+  const handleQrImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setConfigErrorMessage('Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setConfigErrorMessage('La imagen del QR no debe superar los 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        // Redimensionar a max 500x500 manteniendo proporción y calidad óptima
+        const canvas = document.createElement('canvas');
+        const maxDim = 500;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/webp', 0.88);
+          setConfig(prev => ({ ...prev, yapeQrUrl: dataUrl }));
+          setConfigSuccessMessage('¡Imagen de QR cargada! Recuerda hacer clic en "Guardar Configuración de Pagos" abajo para publicar los cambios.');
+          setTimeout(() => setConfigSuccessMessage(null), 6000);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   // Loading initial state
@@ -819,6 +877,87 @@ export default function AdminDashboardPage() {
                   required
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-purple-600 focus:bg-white focus:outline-none transition font-medium text-slate-900"
                 />
+              </div>
+            </div>
+
+            {/* Subida y Previsualización de Código QR Yape */}
+            <div className="pt-5 border-t border-slate-100">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Código QR de Recaudación Yape:
+              </label>
+              <p className="text-xs text-slate-500 mb-4">
+                Sube la imagen oficial del código QR de tu cuenta Yape. Se mostrará en la pantalla de pago para que los anunciantes puedan escanearlo directamente desde su app.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center gap-6 bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80">
+                {/* Visualizador del QR */}
+                <div className="relative group w-40 h-40 rounded-2xl border-2 border-dashed border-purple-300 bg-white flex flex-col items-center justify-center overflow-hidden p-2 shadow-xs shrink-0">
+                  {config.yapeQrUrl ? (
+                    <>
+                      <img 
+                        src={config.yapeQrUrl} 
+                        alt="Código QR Yape Actual" 
+                        className="w-full h-full object-contain rounded-xl"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setConfig(prev => ({ ...prev, yapeQrUrl: '' }))}
+                        title="Eliminar QR"
+                        className="absolute top-2 right-2 p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg shadow-md transition transform active:scale-90"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-center p-3">
+                      <QrCode className="w-12 h-12 text-purple-300 mx-auto mb-2 stroke-[1.5]" />
+                      <span className="text-[11px] font-bold text-slate-700 block">Sin imagen</span>
+                      <span className="text-[10px] text-slate-400">QR genérico activo</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Botón de Carga y Explicación */}
+                <div className="flex-1 space-y-3 text-center sm:text-left">
+                  <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
+                    <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#742284] hover:bg-[#5e1b6b] text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-sm active:scale-95">
+                      <UploadCloud className="w-4 h-4" />
+                      <span>{config.yapeQrUrl ? 'Cambiar Imagen QR' : 'Subir Código QR Yape'}</span>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/jpg, image/webp"
+                        className="hidden"
+                        onChange={handleQrImageUpload}
+                      />
+                    </label>
+
+                    {config.yapeQrUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setConfig(prev => ({ ...prev, yapeQrUrl: '' }))}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-xl text-xs font-semibold transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Quitar imagen
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Acepta capturas de pantalla o fotos en formato <strong>PNG, JPG o WEBP</strong>. Se optimiza y comprime en tu navegador al instante sin consumir espacio extra.
+                  </p>
+
+                  {config.yapeQrUrl ? (
+                    <div className="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg font-medium border border-emerald-200">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      QR cargado en vista previa. Haz clic en <strong>Guardar Configuración de Pagos</strong> abajo.
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-slate-400 italic">
+                      * Si no subes una imagen, se mostrará un código QR ilustrativo junto con tu número y titular.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

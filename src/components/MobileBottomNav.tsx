@@ -64,10 +64,10 @@ export function MobileBottomNav() {
             }`}
           >
             <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black mb-0.5">
-              {userFirstName.charAt(0).toUpperCase()}
+              {isAdmin ? 'C' : userFirstName.charAt(0).toUpperCase()}
             </div>
             <span className="text-[10px] tracking-tight truncate max-w-[64px]">
-              {userFirstName}
+              {isAdmin ? 'Mi Cuenta' : userFirstName}
             </span>
           </Link>
         ) : (

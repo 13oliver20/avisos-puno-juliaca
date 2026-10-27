@@ -9,6 +9,7 @@ export interface AppConfig {
   pricePerDay: number;
   yapePhone: string;
   yapeHolder: string;
+  yapeQrUrl?: string;
   autoApprove: boolean;
   minDays: number;
   maxDays: number;
@@ -18,6 +19,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   pricePerDay: 0.50,
   yapePhone: '951 847 210',
   yapeHolder: 'Avisos Clasificados Puno',
+  yapeQrUrl: '',
   autoApprove: false,
   minDays: 1,
   maxDays: 30

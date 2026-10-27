@@ -31,7 +31,7 @@ import { UserManagementDirectory } from '@/components/UserManagementDirectory';
 
 export default function EmployerPanelPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading, logout } = useAuth();
+  const { user, isLoading: isAuthLoading, logout, isAdmin } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [isLoadingAds, setIsLoadingAds] = useState(true);
   const [panelTab, setPanelTab] = useState<'my_ads' | 'all_users'>('my_ads');
@@ -121,6 +121,16 @@ export default function EmployerPanelPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {(isAdmin || user.role === 'admin') && (
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 bg-purple-700 hover:bg-purple-800 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-md transition"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Panel Admin</span>
+            </Link>
+          )}
+
           <Link
             href="/advertiser/nuevo"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white text-xs sm:text-sm font-bold py-2.5 px-4 sm:px-5 rounded-xl shadow-md transition"

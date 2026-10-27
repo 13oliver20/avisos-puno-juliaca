@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/authContext';
 import { Ad } from '@/types/database';
 import { 
   fetchAllAdsAdmin, 
@@ -41,6 +43,9 @@ import { differenceInDays, differenceInHours, parseISO } from 'date-fns';
 import { UserManagementDirectory } from '@/components/UserManagementDirectory';
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
+  const { isAdmin, setAdminAuthenticated, logout } = useAuth();
+
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -68,15 +73,17 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem('chamba_admin_auth');
-      if (stored === 'true') {
+      const localStored = localStorage.getItem('chamba_admin_auth');
+      if (stored === 'true' || localStored === 'true' || isAdmin) {
         setIsAuthenticated(true);
+        setAdminAuthenticated(true);
       }
     } catch (e) {
       console.error('Error checking auth', e);
     } finally {
       setIsCheckingAuth(false);
     }
-  }, []);
+  }, [isAdmin, setAdminAuthenticated]);
 
   // Load Ads & Config once authenticated
   useEffect(() => {
@@ -113,29 +120,37 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     setAuthError(null);
 
-    const cleanUser = username.trim();
-    if (cleanUser === 'admin123' && password === 'admin123') {
+    const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
+
+    if ((cleanUser === 'admin123' || cleanUser === 'admin' || cleanUser === 'admin@chambaaltoque.pe') && cleanPass === 'admin123') {
       try {
         sessionStorage.setItem('chamba_admin_auth', 'true');
+        localStorage.setItem('chamba_admin_auth', 'true');
       } catch (err) {
         console.error('Session storage error', err);
       }
       setIsAuthenticated(true);
+      setAdminAuthenticated(true);
     } else {
       setAuthError('Usuario o contraseña incorrectos. Verifica tus credenciales de acceso.');
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
       sessionStorage.removeItem('chamba_admin_auth');
+      localStorage.removeItem('chamba_admin_auth');
     } catch (err) {
       console.error('Logout error', err);
     }
+    await logout();
+    setAdminAuthenticated(false);
     setIsAuthenticated(false);
     setUsername('');
     setPassword('');
     setAuthError(null);
+    router.push('/');
   };
 
   const handleApprovePayment = async (ad: Ad) => {

@@ -18,7 +18,7 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, user } = useAuth();
+  const { login, user, isAdmin } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,12 +26,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Si ya está logeado, puede ir directo al panel
+  // Si ya está logeado, redirigir automáticamente según su rol
   React.useEffect(() => {
     if (user) {
-      router.push('/panel');
+      if (isAdmin || user.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/panel');
+      }
     }
-  }, [user, router]);
+  }, [user, isAdmin, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +45,12 @@ export default function LoginPage() {
     try {
       const res = await login(email, password);
       if (res.success) {
-        router.push('/panel');
+        if (res.isAdmin) {
+          // El sistema identifica que es el administrador y lo lleva directamente al panel admin
+          router.push('/admin');
+        } else {
+          router.push('/panel');
+        }
       } else {
         setErrorMessage(res.error || 'Credenciales incorrectas. Verifica tu correo y contraseña.');
       }
@@ -80,22 +89,22 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Campo Correo */}
+          {/* Campo Correo o Usuario */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-              Correo Electrónico
+              Correo Electrónico o Usuario
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <Mail className="w-4 h-4" />
               </div>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="ejemplo@correo.com"
+                placeholder="ejemplo@correo.com o admin123"
                 required
-                autoComplete="email"
+                autoComplete="username"
                 className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-emerald-600 focus:bg-white focus:outline-none transition font-medium text-slate-900"
               />
             </div>

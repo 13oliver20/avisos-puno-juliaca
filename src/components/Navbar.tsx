@@ -9,10 +9,10 @@ import { extractOnlyFirstName } from '@/lib/adTime';
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const isPublic = pathname === '/' || pathname.startsWith('/public');
-  const isAdmin = pathname.startsWith('/admin');
+  const isAdminRoute = pathname.startsWith('/admin');
   const isAuthRoute = pathname === '/login' || pathname === '/register' || pathname === '/panel';
 
   const userFirstName = user ? extractOnlyFirstName(user.firstName, user.email) : '';
@@ -87,18 +87,21 @@ export function Navbar() {
                 </Link>
               )}
 
-              <Link
-                href="/admin"
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 ${
-                  isAdmin
-                    ? 'bg-purple-100 text-purple-900'
-                    : 'text-slate-500 hover:text-purple-700 hover:bg-purple-50'
-                }`}
-                title="Panel de Administración"
-              >
-                <ShieldAlert className="w-3.5 h-3.5" />
-                <span>Admin</span>
-              </Link>
+              {/* Panel Admin: ÚNICAMENTE visible si está autenticado como Administrador */}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${
+                    isAdminRoute
+                      ? 'bg-purple-100 text-purple-900 font-bold'
+                      : 'text-purple-700 hover:text-purple-900 hover:bg-purple-50'
+                  }`}
+                  title="Panel de Administración"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Admin</span>
+                </Link>
+              )}
             </nav>
           </div>
 

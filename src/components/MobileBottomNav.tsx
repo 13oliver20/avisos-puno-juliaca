@@ -9,20 +9,21 @@ import { extractOnlyFirstName } from '@/lib/adTime';
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const isHome = pathname === '/' || pathname.startsWith('/public');
   const isCreateAd = pathname === '/advertiser/nuevo';
   const isUserPanel = pathname === '/panel';
   const isLoginRoute = pathname === '/login' || pathname === '/register';
-  const isAdmin = pathname.startsWith('/admin');
+  const isAdminRoute = pathname.startsWith('/admin');
 
   const userFirstName = user ? extractOnlyFirstName(user.firstName, user.email) : '';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] md:hidden safe-area-bottom">
-      <div className="grid grid-cols-4 h-14 max-w-md mx-auto items-center">
-        {/* Buscar Empleos */}
+      {/* Si es Admin: 4 columnas incluyendo Admin. Si es público/anunciante: estrictamente 3 columnas */}
+      <div className={`grid ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'} h-14 max-w-md mx-auto items-center`}>
+        {/* 1. Buscar Empleos / Avisos */}
         <Link
           href="/"
           className={`flex flex-col items-center justify-center h-full transition ${
@@ -35,7 +36,7 @@ export function MobileBottomNav() {
           <span className="text-[10px] tracking-tight">Avisos</span>
         </Link>
 
-        {/* Publicar Anuncio (Destacado Central) */}
+        {/* 2. Publicar Anuncio (Destacado Central) */}
         <Link
           href="/advertiser/nuevo"
           className="flex flex-col items-center justify-center h-full group"
@@ -52,7 +53,7 @@ export function MobileBottomNav() {
           </span>
         </Link>
 
-        {/* Iniciar Sesión / Nombre de Usuario si está logeado */}
+        {/* 3. Iniciar Sesión / Nombre de Usuario si está logeado */}
         {user ? (
           <Link
             href="/panel"
@@ -83,18 +84,23 @@ export function MobileBottomNav() {
           </Link>
         )}
 
-        {/* Panel Admin */}
-        <Link
-          href="/admin"
-          className={`flex flex-col items-center justify-center h-full transition ${
-            isAdmin
-              ? 'text-purple-700 font-extrabold'
-              : 'text-slate-500 hover:text-purple-700 font-medium'
-          }`}
-        >
-          <ShieldCheck className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Admin</span>
-        </Link>
+        {/* 4. Panel Admin (ÚNICAMENTE VISIBLE SI EL ADMIN ESTÁ AUTENTICADO) */}
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className={`flex flex-col items-center justify-center h-full transition ${
+              isAdminRoute
+                ? 'text-purple-700 font-extrabold'
+                : 'text-purple-600 hover:text-purple-800 font-semibold'
+            }`}
+          >
+            <div className="relative">
+              <ShieldCheck className="w-5 h-5 mb-0.5" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
+            </div>
+            <span className="text-[10px] tracking-tight font-bold">Admin</span>
+          </Link>
+        )}
       </div>
     </nav>
   );
